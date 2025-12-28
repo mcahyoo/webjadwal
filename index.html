@@ -3,41 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal Kegiatan Daerah</title>
+    <title>Jadwal Daerah</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="header">
-        <div class="logo">
-            <i class="bi bi-calendar-check-fill"></i> Agenda Daerah Balikpapan 2
-        </div>
-        <div class="d-flex align-items: center; gap: 10px;">
-            <div id="adminBadge" class="admin-mode-indicator">👑 MODE ADMIN AKTIF</div>
-            <button id="btnLogin" class="btn btn-outline-primary btn-sm btn-admin" onclick="toggleAdmin()">
-                <i class="bi bi-lock-fill"></i> Admin Login
+        <div class="header-left">
+            <button class="btn-hamburger" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+                <i class="bi bi-list"></i>
             </button>
-        </div>
-    </div>
-
-    <div class="calendar-card">
-        <div id="loadingSpinner" class="text-center py-5">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="visually-hidden">Loading...</span>
+            <div class="logo-text">
+                <img src="https://www.gstatic.com/images/branding/product/1x/calendar_2020q4_48dp.png" alt="Logo" width="40">
+                <span>Kalender</span>
             </div>
-            <p class="mt-3 text-muted fw-bold">Sedang mengambil data jadwal...</p>
         </div>
-        <div id='calendar' style="opacity: 0; transition: opacity 0.5s;"></div>
+
+        <div class="header-right">
+             <div class="dropdown desktop-dropdown">
+                <button class="view-dropdown-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" id="dropdownViewLabel">Bulan</button>
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                    <li><a class="dropdown-item" href="#" onclick="changeView('listMonth', 'Jadwal')">Jadwal (List)</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="changeView('timeGridDay', 'Hari')">Hari</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="changeView('timeGridWeek', 'Minggu')">Minggu</a></li>
+                    <li><a class="dropdown-item active" href="#" onclick="changeView('dayGridMonth', 'Bulan')">Bulan</a></li>
+                </ul>
+            </div>
+            <button id="btnLogin" class="btn btn-primary btn-admin" onclick="toggleAdmin()">Login</button>
+        </div>
     </div>
 
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" style="width: 280px;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title"><span style="color:#4285f4">G</span><span style="color:#ea4335">o</span><span style="color:#fbbc05">o</span><span style="color:#4285f4">g</span><span style="color:#34a853">l</span><span style="color:#ea4335">e</span> Kalender</h5>
+        </div>
+        <div class="offcanvas-body p-0">
+            <ul class="sidebar-menu">
+                <li class="sidebar-item" onclick="changeView('listMonth', 'Jadwal')"><i class="bi bi-list-task"></i> Jadwal</li>
+                <li class="sidebar-item" onclick="changeView('timeGridDay', 'Hari')"><i class="bi bi-calendar-day"></i> Hari</li>
+                <li class="sidebar-item" onclick="changeView('timeGridWeek', 'Minggu')"><i class="bi bi-calendar-week"></i> Minggu</li>
+                <li class="sidebar-item active" onclick="changeView('dayGridMonth', 'Bulan')"><i class="bi bi-calendar3"></i> Bulan</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="calendar-container">
+        <div id="loadingSpinner" class="d-flex justify-content-center align-items-center h-100">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+        </div>
+        <div id='calendar' style="opacity: 0; transition: opacity 0.3s;"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js"></script>
 
 </body>

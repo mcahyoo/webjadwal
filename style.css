@@ -1,113 +1,147 @@
 /* =========================================
-   1. GLOBAL & LAYOUT DASAR
+   GOOGLE CALENDAR CLONE STYLE
    ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f0f2f5;
+    font-family: 'Roboto', sans-serif;
+    background-color: #fff;
     margin: 0;
+    overflow: hidden; /* Biar scroll cuma ada di area kalender */
 }
 
-/* =========================================
-   2. HEADER & NAVIGASI
-   ========================================= */
+/* --- HEADER NAVIGATION --- */
 .header {
     background: #fff;
-    padding: 15px 20px;
+    padding: 10px 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    position: sticky; /* Biar nempel di atas pas scroll */
-    top: 0;
-    z-index: 100;
+    border-bottom: 1px solid #dadce0;
+    height: 64px;
+    box-sizing: border-box;
 }
 
-.logo {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a73e8;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+.header-left { display: flex; align-items: center; gap: 15px; }
+.header-right { display: flex; align-items: center; gap: 10px; }
 
-/* =========================================
-   3. CONTAINER UTAMA (KARTU KALENDER)
-   ========================================= */
-.calendar-card {
+/* Hamburger Menu (Mobile Only) */
+.btn-hamburger {
+    background: none; border: none; font-size: 24px; color: #5f6368; cursor: pointer; padding: 5px; border-radius: 50%;
+}
+.btn-hamburger:hover { background-color: #f1f3f4; }
+
+.logo-text { font-size: 22px; color: #5f6368; font-weight: 400; display: flex; align-items: center; gap: 8px; }
+
+/* Desktop View Dropdown (Desktop Only) */
+.view-dropdown-btn {
+    border: 1px solid #dadce0;
     background: white;
-    border-radius: 12px;
-    margin: 20px auto;
-    max-width: 1200px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    min-height: 80vh;
-}
-
-/* =========================================
-   4. UI ADMIN (TOMBOL & INDIKATOR)
-   ========================================= */
-.btn-admin {
-    border-radius: 20px;
+    padding: 8px 15px;
+    border-radius: 4px;
     font-size: 14px;
-    font-weight: 600;
-}
-
-.admin-mode-indicator {
-    display: none; /* Default sembunyi */
-    background: #ffebee;
-    color: #c62828;
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    border: 1px solid #ffcdd2;
-}
-
-/* =========================================
-   5. TWEAK FULLCALENDAR (CUSTOM STYLE)
-   ========================================= */
-
-/* Tombol Navigasi (Today, Month, Week) jadi Kapital */
-.fc-button {
-    text-transform: capitalize !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.5px;
-}
-
-.fc-today-button {
-    text-transform: capitalize !important;
-}
-
-/* Warna Header Hari (Senin, Selasa, dst) */
-.fc-col-header-cell-cushion {
-    color: #1a73e8;
-    text-decoration: none;
-}
-
-.fc-daygrid-day-number {
-    color: #5f6368;
-    text-decoration: none;
-}
-
-/* --- FIX TULISAN EVENT (WRAP TEXT) --- */
-.fc-event {
-    border: none !important;
-    margin-bottom: 2px !important;
+    font-weight: 500;
+    color: #3c4043;
+    display: flex; align-items: center; gap: 10px;
     cursor: pointer;
 }
+.view-dropdown-btn:hover { background-color: #f1f3f4; }
 
-.fc-event-title {
-    white-space: normal !important; /* Kunci biar teks turun baris */
-    overflow-wrap: break-word;      /* Potong kata jika terlalu panjang */
-    font-size: 11px !important;
-    line-height: 1.3 !important;
-    padding: 2px 0;
+/* Tombol Admin */
+.btn-admin { border-radius: 4px !important; font-weight: 500; padding: 6px 16px !important; }
+
+/* --- SIDEBAR (OFFCANVAS MOBILE) --- */
+.sidebar-menu {
+    list-style: none; padding: 10px 0; margin: 0;
+}
+.sidebar-item {
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 15px;
+    font-size: 14px; font-weight: 500; color: #3c4043;
+    cursor: pointer;
+    border-radius: 0 20px 20px 0;
+    margin-right: 10px;
+}
+.sidebar-item:hover { background-color: #f1f3f4; }
+.sidebar-item.active { background-color: #e8f0fe; color: #1967d2; }
+.sidebar-item i { font-size: 18px; width: 24px; text-align: center; }
+
+.offcanvas-title { font-size: 22px; color: #5f6368; }
+
+/* --- FULLCALENDAR CUSTOMIZATION --- */
+.calendar-container {
+    height: calc(100vh - 64px); /* Full height minus header */
+    padding: 0;
+    overflow-y: hidden;
 }
 
-/* Biar kotak event lentur mengikuti tinggi teks */
-.fc-daygrid-event {
-    white-space: normal !important;
-    height: auto !important;
-    align-items: flex-start !important;
+#calendar {
+    height: 100%;
+}
+
+/* Hilangkan Header Bawaan FullCalendar yang tombol kanan */
+.fc-header-toolbar {
+    padding: 10px 20px 0 20px !important;
+    margin-bottom: 10px !important;
+}
+
+/* Title Bulan (September 2025) */
+.fc-toolbar-title { font-size: 22px !important; color: #3c4043; font-weight: 400; }
+
+/* Tombol Navigasi (Prev/Next/Today) */
+.fc-button-primary { 
+    background-color: transparent !important; 
+    color: #3c4043 !important; 
+    border: none !important; 
+    box-shadow: none !important;
+}
+.fc-button-primary:hover { background-color: #f1f3f4 !important; border-radius: 50%; }
+.fc-today-button {
+    border: 1px solid #dadce0 !important;
+    border-radius: 4px !important;
+    margin-right: 15px !important;
+}
+.fc-today-button:hover { background-color: #f1f3f4 !important; border-radius: 4px !important; }
+
+/* Tampilan Grid */
+.fc-col-header-cell-cushion { color: #70757a; font-size: 11px; font-weight: 500; text-transform: uppercase; }
+.fc-daygrid-day-number { color: #3c4043; font-size: 12px; font-weight: 500; padding: 8px; }
+
+/* Highlight Hari Ini */
+.fc-day-today .fc-daygrid-day-number {
+    background-color: #1a73e8; color: white !important;
+    border-radius: 50%; width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center; margin: 2px;
+}
+
+/* Event Style */
+.fc-event {
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 2px 4px !important;
+    font-size: 12px !important;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+/* List View Style */
+.fc-list-event-time { display: none; } /* Sembunyikan jam di list biar bersih */
+.fc-list-day-cushion { background-color: #f8f9fa !important; }
+
+/* --- RESPONSIVE LOGIC --- */
+
+/* Tampilan Mobile (< 768px) */
+@media (max-width: 768px) {
+    .desktop-dropdown { display: none !important; } /* Sembunyikan dropdown desktop */
+    .btn-hamburger { display: block; } /* Munculkan hamburger */
+    .fc-header-toolbar { flex-direction: row; align-items: center; justify-content: space-between; }
+    .fc-toolbar-chunk:nth-child(3) { display: none; } /* Sembunyikan tombol kanan bawaan */
+    
+    .logo-text span { display: none; } /* Sembunyikan tulisan 'Agenda' biar muat */
+}
+
+/* Tampilan Desktop (> 768px) */
+@media (min-width: 769px) {
+    .btn-hamburger { display: none; } /* Sembunyikan hamburger */
+    .desktop-dropdown { display: block; } /* Munculkan dropdown */
 }
