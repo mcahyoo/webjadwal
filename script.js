@@ -14,8 +14,7 @@ console.log("🚀 Script dimulai...");
 if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const db = firebase.firestore();
 
-// --- DAFTAR AKUN ADMIN (Username : Password) ---
-// Kamu bisa tambah akun di sini
+// --- DAFTAR AKUN ADMIN ---
 const ADMIN_ACCOUNTS = {
     "admin": "admin123",
     "cahyo": "balikpapan2025",
@@ -23,7 +22,7 @@ const ADMIN_ACCOUNTS = {
 };
 
 let calendar;
-let isAdmin = false; // Default bukan admin
+let isAdmin = false; 
 let currentUser = "";
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -55,15 +54,14 @@ document.addEventListener('DOMContentLoaded', function() {
         eventContent: function(arg) {
             let type = arg.event.extendedProps.waktuType;
             let title = arg.event.title;
-            let timeText = arg.timeText; // Jam otomatis dari FullCalendar
+            let timeText = arg.timeText; 
             let isAllDay = arg.event.allDay;
 
             let colorClass = 'bg-primary'; 
             if(type === 'pagi') colorClass = 'bg-primary'; 
             if(type === 'siang') colorClass = 'bg-warning text-dark'; 
             if(type === 'malam') colorClass = 'bg-secondary'; 
-            // Kalau jam manual (custom), warnanya ungu
-            if(!type && !isAllDay) colorClass = 'bg-info text-dark';
+            if(!type && !isAllDay) colorClass = 'bg-info text-dark'; // Jam Manual
 
             // Tampilan List/Minggu/Hari
             if (arg.view.type === 'listMonth' || arg.view.type === 'timeGridWeek' || arg.view.type === 'timeGridDay') {
@@ -89,9 +87,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // KLIK JADWAL (Admin = Edit, User = Lihat Detail)
         eventClick: function(info) { 
             if(isAdmin) {
-                handleAdminEdit(info); // Admin Edit
+                handleAdminEdit(info); 
             } else {
-                handleUserView(info);  // User Lihat Detail
+                handleUserView(info);  
             }
         }
     });
@@ -108,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if(data.waktuType === 'pagi') data.color = '#0d6efd';
             else if(data.waktuType === 'siang') data.color = '#ffc107';
             else if(data.waktuType === 'malam') data.color = '#6c757d';
-            else if(!data.allDay) data.color = '#0dcaf0'; // Warna Jam Manual
+            else if(!data.allDay) data.color = '#0dcaf0'; 
 
             calendar.addEvent(data);
         });
@@ -143,11 +141,14 @@ function handleUserView(info) {
     let event = info.event;
     let waktu = "";
     
-    // Cek tampilan waktu
     if (event.allDay) waktu = "📅 Seharian Penuh";
-    else if (event.extendedProps.waktuType) waktu = "🕒 Sesi: " + event.extendedProps.waktuType.toUpperCase();
+    else if (event.extendedProps.waktuType) {
+        let tipe = event.extendedProps.waktuType.toUpperCase();
+        let jamMulai = event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        let jamSelesai = event.end ? event.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+        waktu = `🕒 ${tipe} (${jamMulai} - ${jamSelesai})`;
+    }
     else {
-        // Format jam manual
         let jamMulai = event.start ? event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-';
         let jamSelesai = event.end ? event.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
         waktu = `⏰ Jam: ${jamMulai} ${jamSelesai ? '- ' + jamSelesai : ''}`;
@@ -164,7 +165,7 @@ function handleUserView(info) {
     });
 }
 
-// --- FITUR 2: TAMBAH JADWAL PINTAR (ADMIN) ---
+// --- FITUR 2: TAMBAH JADWAL (ADMIN) ---
 async function handleAdminAdd(info) {
     const { value: formValues } = await Swal.fire({
         title: 'Tambah Jadwal Baru',
@@ -176,24 +177,22 @@ async function handleAdminAdd(info) {
                 <label class="form-label fw-bold small">Pilih Sesi (Opsional)</label>
                 <select id="swal-type" class="form-select mb-3">
                     <option value="">-- Tidak Pilih Sesi --</option>
-                    <option value="pagi">🌅 Pagi</option>
-                    <option value="siang">☀️ Siang</option>
-                    <option value="malam">🌙 Malam</option>
+                    <option value="pagi">🌅 Pagi (08:00 - 12:00)</option>
+                    <option value="siang">☀️ Siang (13:00 - 18:00)</option>
+                    <option value="malam">🌙 Malam (19:00 - 22:00)</option>
                 </select>
 
-                <label class="form-label fw-bold small">Atau Jam Manual (Opsional)</label>
+                <label class="form-label fw-bold small">Atau Jam Manual</label>
                 <div class="d-flex gap-2">
                     <input type="time" id="swal-start" class="form-control">
                     <span class="align-self-center">-</span>
                     <input type="time" id="swal-end" class="form-control">
                 </div>
-                <div class="form-text small text-muted fst-italic mt-1">*Jika sesi & jam dikosongkan, otomatis jadi "Seharian (All Day)"</div>
             </div>
         `,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: 'Simpan',
-        cancelButtonText: 'Batal',
         preConfirm: () => {
             return {
                 title: document.getElementById('swal-title').value,
@@ -205,57 +204,165 @@ async function handleAdminAdd(info) {
     });
 
     if (formValues && formValues.title) {
-        let title = formValues.title;
-        let type = formValues.type; 
-        let jamStart = formValues.jamStart;
-        let jamEnd = formValues.jamEnd;
-        let isAllDay = false;
-        
-        let startIso = info.startStr; // YYYY-MM-DD
-        let endIso = info.endStr;     // YYYY-MM-DD
-
-        // LOGIKA PENENTUAN WAKTU
-        if (type) {
-            // Kasus 1: Pilih Sesi (Pagi/Siang/Malam) -> All Day False, Jam Dummy
-            startIso += 'T08:00'; 
-            endIso = startIso;
-        } else if (jamStart) {
-            // Kasus 2: Isi Jam Manual -> All Day False, Jam Sesuai Input
-            startIso += 'T' + jamStart;
-            if(jamEnd) {
-                // End date harus sama dengan start date kalau input jam manual di hari yang sama
-                endIso = info.startStr + 'T' + jamEnd; 
-            } else {
-                endIso = null;
-            }
-        } else {
-            // Kasus 3: Kosong Semua -> All Day True
-            isAllDay = true;
-            // startIso & endIso biarkan format tanggal saja (YYYY-MM-DD)
-        }
-
-        db.collection("events").add({
-            title: title,
-            start: startIso,
-            end: endIso,
-            waktuType: type || null, // Kirim null kalau string kosong
-            allDay: isAllDay
-        })
-        .then(() => Swal.fire({icon: 'success', title: 'Tersimpan', timer: 1000, showConfirmButton: false}))
-        .catch((err) => Swal.fire('Error', err.message, 'error'));
+        saveEventToFirebase(
+            formValues.title, 
+            formValues.type, 
+            formValues.jamStart, 
+            formValues.jamEnd, 
+            info.startStr.split('T')[0] // Ambil tanggal YYYY-MM-DD
+        );
     }
 }
 
-// --- FITUR 3: LOGIN ADMIN DENGAN PASSWORD ---
+// --- FITUR 3: EDIT LENGKAP JADWAL (ADMIN) ---
+async function handleAdminEdit(info) {
+    let event = info.event;
+    let props = event.extendedProps;
+    
+    // Ambil data lama
+    let currentTitle = event.title;
+    let currentType = props.waktuType || "";
+    // Format jam lama ke HH:mm
+    let currentStart = event.start ? event.start.toTimeString().substring(0,5) : "";
+    let currentEnd = event.end ? event.end.toTimeString().substring(0,5) : "";
+
+    const { value: formValues } = await Swal.fire({
+        title: 'Edit Jadwal',
+        html: `
+            <div class="text-start">
+                <label class="form-label fw-bold small">Judul Kegiatan</label>
+                <input id="swal-title" class="form-control mb-3" value="${currentTitle}">
+                
+                <label class="form-label fw-bold small">Pilih Sesi</label>
+                <select id="swal-type" class="form-select mb-3">
+                    <option value="" ${currentType === '' ? 'selected' : ''}>-- Manual / All Day --</option>
+                    <option value="pagi" ${currentType === 'pagi' ? 'selected' : ''}>🌅 Pagi (08:00 - 12:00)</option>
+                    <option value="siang" ${currentType === 'siang' ? 'selected' : ''}>☀️ Siang (13:00 - 18:00)</option>
+                    <option value="malam" ${currentType === 'malam' ? 'selected' : ''}>🌙 Malam (19:00 - 22:00)</option>
+                </select>
+
+                <label class="form-label fw-bold small">Jam Manual</label>
+                <div class="d-flex gap-2">
+                    <input type="time" id="swal-start" class="form-control" value="${currentStart}">
+                    <span class="align-self-center">-</span>
+                    <input type="time" id="swal-end" class="form-control" value="${currentEnd}">
+                </div>
+            </div>
+            <div class="mt-3 text-center border-top pt-3">
+                <button type="button" class="btn btn-outline-danger btn-sm w-100" id="btn-delete-event">
+                    <i class="bi bi-trash"></i> Hapus Jadwal Ini
+                </button>
+            </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan Perubahan',
+        cancelButtonText: 'Batal',
+        didOpen: () => {
+            // Pasang tombol hapus
+            document.getElementById('btn-delete-event').addEventListener('click', () => {
+                Swal.close();
+                confirmDelete(event.id);
+            });
+        },
+        preConfirm: () => {
+            return {
+                title: document.getElementById('swal-title').value,
+                type: document.getElementById('swal-type').value,
+                jamStart: document.getElementById('swal-start').value,
+                jamEnd: document.getElementById('swal-end').value
+            }
+        }
+    });
+
+    if (formValues) {
+        // Ambil YYYY-MM-DD dari tanggal event yang sedang diedit
+        let dateOnly = event.start.getFullYear() + '-' +
+                       String(event.start.getMonth() + 1).padStart(2, '0') + '-' +
+                       String(event.start.getDate()).padStart(2, '0');
+
+        updateEventInFirebase(
+            event.id,
+            formValues.title,
+            formValues.type,
+            formValues.jamStart,
+            formValues.jamEnd,
+            dateOnly
+        );
+    }
+}
+
+// --- HELPER: SIMPAN/UPDATE LOGIC ---
+// Dipisah biar kodingannya rapi (DRY Principle)
+function calculateTime(dateBase, type, jamStart, jamEnd) {
+    let startIso = dateBase;
+    let endIso = dateBase;
+    let isAllDay = false;
+
+    if (type) {
+        if(type === 'pagi')  { startIso += 'T08:00'; endIso += 'T12:00'; }
+        if(type === 'siang') { startIso += 'T13:00'; endIso += 'T18:00'; }
+        if(type === 'malam') { startIso += 'T19:00'; endIso += 'T22:00'; }
+    } else if (jamStart) {
+        startIso += 'T' + jamStart;
+        if(jamEnd) endIso += 'T' + jamEnd;
+        else endIso = null;
+    } else {
+        isAllDay = true;
+    }
+    return { startIso, endIso, isAllDay, type: type || null };
+}
+
+function saveEventToFirebase(title, type, jamStart, jamEnd, dateBase) {
+    let calc = calculateTime(dateBase, type, jamStart, jamEnd);
+    db.collection("events").add({
+        title: title,
+        start: calc.startIso,
+        end: calc.endIso,
+        waktuType: calc.type,
+        allDay: calc.isAllDay
+    })
+    .then(() => Swal.fire({icon: 'success', title: 'Tersimpan', timer: 1000, showConfirmButton: false}))
+    .catch((err) => Swal.fire('Error', err.message, 'error'));
+}
+
+function updateEventInFirebase(id, title, type, jamStart, jamEnd, dateBase) {
+    let calc = calculateTime(dateBase, type, jamStart, jamEnd);
+    db.collection("events").doc(id).update({
+        title: title,
+        start: calc.startIso,
+        end: calc.endIso,
+        waktuType: calc.type,
+        allDay: calc.isAllDay
+    })
+    .then(() => Swal.fire({icon: 'success', title: 'Diupdate', timer: 1000, showConfirmButton: false}))
+    .catch((err) => Swal.fire('Error', err.message, 'error'));
+}
+
+function confirmDelete(id) {
+    Swal.fire({
+        title: 'Yakin hapus?',
+        text: "Data tidak bisa dikembalikan",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Ya, Hapus'
+    }).then((res) => {
+        if (res.isConfirmed) {
+            db.collection("events").doc(id).delete();
+            Swal.fire('Terhapus', '', 'success');
+        }
+    });
+}
+
+// --- FITUR 4: LOGIN ---
 async function toggleAdmin() {
     if (isAdmin) {
-        // LOGOUT
         isAdmin = false;
         currentUser = "";
         updateAdminButton();
         Swal.fire('Logout Berhasil', 'Mode kembali ke User', 'info');
     } else {
-        // LOGIN FORM
         const { value: formValues } = await Swal.fire({
             title: '🔐 Login Admin',
             html: `
@@ -274,24 +381,14 @@ async function toggleAdmin() {
         });
 
         if (formValues) {
-            // Cek Username & Password
             let storedPass = ADMIN_ACCOUNTS[formValues.user];
-            
             if (storedPass && storedPass === formValues.pass) {
                 isAdmin = true;
                 currentUser = formValues.user;
                 updateAdminButton();
-                Swal.fire({
-                    icon: 'success', 
-                    title: `Halo, ${currentUser}!`, 
-                    text: 'Mode Edit Aktif'
-                });
+                Swal.fire({icon: 'success', title: `Halo, ${currentUser}!`, text: 'Mode Edit Aktif'});
             } else {
-                Swal.fire({
-                    icon: 'error', 
-                    title: 'Gagal', 
-                    text: 'Username atau Password salah!'
-                });
+                Swal.fire({icon: 'error', title: 'Gagal', text: 'Username atau Password salah!'});
             }
         }
     }
@@ -306,38 +403,4 @@ function updateAdminButton() {
         btn.innerHTML = 'Login Admin';
         btn.classList.replace('btn-danger', 'btn-primary');
     }
-}
-
-// Edit/Hapus (Hanya Admin)
-async function handleAdminEdit(info) {
-    Swal.fire({
-        title: 'Kelola Jadwal',
-        html: `<p class="fw-bold">${info.event.title}</p><p class="small text-muted">Apa yang ingin dilakukan?</p>`,
-        showDenyButton: true,
-        showCancelButton: true,
-        confirmButtonText: '🗑️ Hapus',
-        confirmButtonColor: '#d33',
-        denyButtonText: '✏️ Edit Judul',
-        denyButtonColor: '#f39c12',
-        cancelButtonText: 'Batal'
-    }).then(async (result) => {
-        // HAPUS
-        if (result.isConfirmed) {
-            db.collection("events").doc(info.event.id).delete();
-            Swal.fire('Terhapus', '', 'success');
-        } 
-        // EDIT JUDUL
-        else if (result.isDenied) {
-            const { value: newTitle } = await Swal.fire({
-                input: 'text',
-                inputLabel: 'Ubah Judul',
-                inputValue: info.event.title,
-                showCancelButton: true
-            });
-            if (newTitle) {
-                db.collection("events").doc(info.event.id).update({ title: newTitle });
-                Swal.fire('Diupdate', '', 'success');
-            }
-        }
-    });
 }
